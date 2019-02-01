@@ -72,7 +72,7 @@ class _CameraWidgetState extends State<CameraWidget> {
             left: 0.0,
             right: 0.0,
             child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
+              aspectRatio: _controller.value.aspectRatio,//MediaQuery.of(context).size.width / MediaQuery.of(context).size.height ,
               child: CameraPreview(_controller)
             ),
           ),
@@ -92,27 +92,6 @@ class _CameraWidgetState extends State<CameraWidget> {
         onStart: _filmVideo,
         onEnd: _stop,
       )
-      // Row(
-      //   children: <Widget>[
-      //     Expanded(
-      //       child: (_controller.value.isRecordingVideo) 
-      //       ? Timer(
-      //           onFinish: _stop,
-      //         )
-      //       : SizedBox()
-      //     ),
-      //     Expanded(
-      //       child: (_controller.value.isRecordingVideo) 
-      //         ? _buildButton(_stop, Icon(Icons.stop, color: Colors.red, size : 90))
-      //         : RecordButton(
-      //           onPressed: _filmVideo,
-      //         )
-      //     ),
-      //     Expanded(
-      //       child: _buildButton(_playLast, Icon(Icons.play_arrow, color: Colors.white54, size : 90))
-      //     ),
-      //   ],
-      // ),
     );
   }
 

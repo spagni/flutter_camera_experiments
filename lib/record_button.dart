@@ -19,7 +19,7 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
   AnimationController _scaleController;
   Animation<double> _scaleAnimation;
   Animation<double> _iconOpacity;
-  int _scaleDuration = 500;
+  int _scaleDuration = 1000;
 
   double get _bigCircleSize => 100.0;
   double get _smallCircleSize => 60.0;
@@ -37,13 +37,16 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
       duration: Duration(milliseconds: _scaleDuration)
     );
 
-    _iconOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(_scaleController)
+    _iconOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      curve: Interval(0.3, 1.0),
+      parent: _scaleController
+    ))
     ..addListener(()=> setState((){}));
 
     _scaleAnimation = Tween<double>(begin: _smallCircleSize, end: _bigCircleSize).animate(
       CurvedAnimation(
         parent: _scaleController,
-        curve: Curves.elasticOut
+        curve: Curves.fastOutSlowIn
       )
     )..addListener((){
       setState((){});
@@ -78,7 +81,7 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
             color: Colors.white
           ),
           alignment: Alignment.center,
-          child:  (_isRecording) ? _stopIcon() : SizedBox(),
+          child: _stopIcon()
         ),
         onTap: (_isRecording) ? _stopRecording : _startRecording 
       )
