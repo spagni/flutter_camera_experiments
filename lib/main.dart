@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'timer.dart';
 import 'package:video_player/video_player.dart';
+import 'record_button.dart';
 
 void main() => runApp(CameraApp());
 
@@ -19,6 +20,7 @@ class CameraApp extends StatelessWidget {
         primaryColor: Colors.amber
       ),
       home: Scaffold(
+        backgroundColor: Colors.black54,
         body: CameraWidget()
       ),
     );
@@ -62,32 +64,55 @@ class _CameraWidgetState extends State<CameraWidget> {
     (_controller.value != null && !_controller.value.isInitialized)) 
       return Center(child: CircularProgressIndicator());
 
-    return Column(
-      children: <Widget>[
-        AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: CameraPreview(_controller)
-        ),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: (_controller.value.isRecordingVideo) 
-              ? Timer(
-                  onFinish: _stop,
-                )
-              : SizedBox()
+    return SafeArea(
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            top: 0.0,
+            left: 0.0,
+            right: 0.0,
+            child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: CameraPreview(_controller)
             ),
-            Expanded(
-              child: (_controller.value.isRecordingVideo) 
-                ? _buildButton(_stop, Icon(Icons.stop, color: Colors.red, size : 90))
-                : _buildButton(_filmVideo, Icon(Icons.videocam, color: Colors.red, size : 90)),
-            ),
-            Expanded(
-              child: _buildButton(_playLast, Icon(Icons.play_arrow, color: Colors.black38, size : 90))
-            ),
-          ],
-        )
-      ],
+          ),
+          _buildGradient(),
+          _buildButtonBar()
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButtonBar() {
+    return Positioned(
+      bottom: 6.0,
+      left: 0.0,
+      right: 0.0,
+      child: RecordButton(
+        onStart: _filmVideo,
+        onEnd: _stop,
+      )
+      // Row(
+      //   children: <Widget>[
+      //     Expanded(
+      //       child: (_controller.value.isRecordingVideo) 
+      //       ? Timer(
+      //           onFinish: _stop,
+      //         )
+      //       : SizedBox()
+      //     ),
+      //     Expanded(
+      //       child: (_controller.value.isRecordingVideo) 
+      //         ? _buildButton(_stop, Icon(Icons.stop, color: Colors.red, size : 90))
+      //         : RecordButton(
+      //           onPressed: _filmVideo,
+      //         )
+      //     ),
+      //     Expanded(
+      //       child: _buildButton(_playLast, Icon(Icons.play_arrow, color: Colors.white54, size : 90))
+      //     ),
+      //   ],
+      // ),
     );
   }
 
@@ -121,7 +146,7 @@ class _CameraWidgetState extends State<CameraWidget> {
     try {
       if (_controller.value.isRecordingVideo) return;
       
-      _videoPath = '$_appDir/video${Random().nextInt(10000)}.mp4';
+      _videoPath = '$_appDir/video${Random().nextInt(1000)}.mp4';
       
       await _controller.startVideoRecording(_videoPath);
       setState((){});
@@ -149,6 +174,21 @@ class _CameraWidgetState extends State<CameraWidget> {
         file: File(_videoPath)
       )
     ));
+  }
+
+  Widget _buildGradient() {
+    //Sirve para cuando la camara se superpone con buttonBar
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.transparent, Colors.black54],
+          begin: Alignment.center,
+          end: Alignment.bottomCenter,
+          stops: [0.4, 1.0]
+
+        )
+      ),
+    );
   }
 }
 

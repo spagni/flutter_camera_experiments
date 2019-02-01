@@ -49,7 +49,8 @@ class _TimerState extends State<Timer> with SingleTickerProviderStateMixin {
         child: Text(
           '${_animation.value}/$_duration',
           style: TextStyle(
-            fontSize: 50.0
+            fontSize: 50.0,
+            color: Colors.white
           ),
         ),
       )
