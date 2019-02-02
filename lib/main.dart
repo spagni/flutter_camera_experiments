@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
-import 'timer.dart';
 import 'package:video_player/video_player.dart';
 import 'record_button.dart';
 

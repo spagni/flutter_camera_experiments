@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RecordButton extends StatefulWidget {
@@ -14,14 +15,16 @@ class RecordButton extends StatefulWidget {
   }
 }
 
-class RecordButtonState extends State<RecordButton> with SingleTickerProviderStateMixin {
+class RecordButtonState extends State<RecordButton> with TickerProviderStateMixin {
   bool _isRecording;
   AnimationController _scaleController;
   Animation<double> _scaleAnimation;
   Animation<double> _iconOpacity;
-  int _scaleDuration = 1000;
+  Animation<double> _arcAnimation;
+  AnimationController _arcController;
+  int _scaleDuration = 800;
 
-  double get _bigCircleSize => 100.0;
+  double get _bigCircleSize => 90.0;
   double get _smallCircleSize => 60.0;
 
   @override
@@ -29,6 +32,7 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
     super.initState();
     _isRecording = false;
     _initScaleAnimation();
+    _initArcAnimation();
   }
 
   void _initScaleAnimation() {
@@ -51,6 +55,29 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
     )..addListener((){
       setState((){});
     });
+    _scaleController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _arcController.forward();
+      }
+    });
+  }
+
+  void _initArcAnimation() {
+    _arcController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 20)
+    );
+    _arcAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_arcController)
+    ..addListener((){
+      setState((){});
+    });
+
+    _arcController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _arcController.reset();
+        _stopRecording();
+      }
+    });
   }
 
   @override
@@ -62,26 +89,33 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.all(4.0),
       height: _bigCircleSize,
       width: _bigCircleSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white12
+        color: Colors.white24
       ),
       child: InkWell(
         customBorder: CircleBorder(),
         highlightColor: Colors.red,
         splashColor: Colors.red,
-        child: Container(
-          height: _scaleAnimation.value,
-          width: _scaleAnimation.value,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white
+        child: CustomPaint(
+          painter: TimerPainter(
+            color: Colors.green,
+            value: _arcAnimation.value
           ),
-          alignment: Alignment.center,
-          child: _stopIcon()
+          child: Container(
+            height: _scaleAnimation.value,
+            width: _scaleAnimation.value,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white
+            ),
+            alignment: Alignment.center,
+            child: _stopIcon()
+          ),
         ),
         onTap: (_isRecording) ? _stopRecording : _startRecording 
       )
@@ -98,6 +132,8 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
 
   void _stopRecording() {
     // widget.onEnd();
+    _arcController.stop();
+    _arcController.reset();
     _scaleController.reverse();
     setState(() {
       _isRecording = false;
@@ -109,5 +145,32 @@ class RecordButtonState extends State<RecordButton> with SingleTickerProviderSta
       opacity: _iconOpacity.value,
       child: Icon(Icons.stop, color: Colors.red, size: 70.0)
     );
+  }
+}
+
+class TimerPainter extends CustomPainter {
+  TimerPainter({
+    this.value,
+    this.color,
+  });
+
+  final double value;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 10.0
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    double progress = (1.0 - value) * 2 * pi;
+    canvas.drawArc(Offset.zero & size, pi * 1.5, progress, true, paint);
+  }
+
+  @override
+  bool shouldRepaint(TimerPainter old) {
+    return value != old.value || color != old.color;
   }
 }
