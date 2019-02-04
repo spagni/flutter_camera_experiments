@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math_64.dart' as math;
 
 class RecordButton extends StatefulWidget {
   final VoidCallback onStart;
@@ -65,9 +66,9 @@ class RecordButtonState extends State<RecordButton> with TickerProviderStateMixi
   void _initArcAnimation() {
     _arcController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 20)
+      duration: Duration(seconds: 5)
     );
-    _arcAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_arcController)
+    _arcAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_arcController)
     ..addListener((){
       setState((){});
     });
@@ -102,7 +103,7 @@ class RecordButtonState extends State<RecordButton> with TickerProviderStateMixi
         highlightColor: Colors.red,
         splashColor: Colors.red,
         child: CustomPaint(
-          painter: TimerPainter(
+          painter: ProgressPainter(
             color: Colors.green,
             value: _arcAnimation.value
           ),
@@ -148,8 +149,8 @@ class RecordButtonState extends State<RecordButton> with TickerProviderStateMixi
   }
 }
 
-class TimerPainter extends CustomPainter {
-  TimerPainter({
+class ProgressPainter extends CustomPainter {
+  ProgressPainter({
     this.value,
     this.color,
   });
@@ -160,17 +161,23 @@ class TimerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..color = color
       ..strokeWidth = 10.0
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.butt
+      ..shader = LinearGradient(
+          colors: [Colors.red, Colors.green, Colors.greenAccent]
+        ).createShader(Rect.fromCircle(
+          center: Offset(size.width/2, size.height/2),
+          radius: size.width/2
+        )
+      );
 
-    double progress = (1.0 - value) * 2 * pi;
-    canvas.drawArc(Offset.zero & size, pi * 1.5, progress, true, paint);
+    double progress = value * 360;
+    canvas.drawArc(Offset.zero & size, math.radians(-90), math.radians(progress), true, paint);
   }
 
   @override
-  bool shouldRepaint(TimerPainter old) {
+  bool shouldRepaint(ProgressPainter old) {
     return value != old.value || color != old.color;
   }
 }
